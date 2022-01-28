@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ReverseBot": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

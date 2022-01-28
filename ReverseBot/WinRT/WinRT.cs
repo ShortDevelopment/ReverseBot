@@ -17,8 +17,17 @@ namespace ReverseBot.WinRT
                     return (string)key.GetValue("DllPath");
 
             Guid iid = type.GetInterface($"I{type.Name}").GUID;
+            return FindIIDImplementation(iid).name;
+        }
+
+        public static (string name, string dllPath) FindIIDImplementation(Guid iid)
+        {
             using (RegistryKey root = Registry.ClassesRoot)
             {
+                string name;
+                using (RegistryKey key = root.OpenSubKey($@"Interface\{{{iid}}}"))
+                    name = (string)key.GetValue(null);
+
                 string clsid = null;
                 using (RegistryKey key = root.OpenSubKey($@"Interface\{{{iid}}}\ProxyStubClsid32"))
                     clsid = (string)key.GetValue(null);
@@ -26,8 +35,11 @@ namespace ReverseBot.WinRT
                 if (clsid == null)
                     throw new FileNotFoundException();
 
+                string dllPath;
                 using (RegistryKey key = root.OpenSubKey($@"CLSID\{clsid}\InProcServer32"))
-                    return (string)key.GetValue(null);
+                    dllPath = (string)key.GetValue(null);
+
+                return (name, dllPath);
             }
         }
     }
