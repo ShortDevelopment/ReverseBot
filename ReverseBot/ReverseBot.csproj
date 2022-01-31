@@ -9,6 +9,7 @@
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
 	  <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22000.196" />
+	  <PackageReference Include="Spectre.Console" Version="0.43.0" />
 	</ItemGroup>
 
 </Project>

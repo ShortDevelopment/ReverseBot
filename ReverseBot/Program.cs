@@ -1,25 +1,71 @@
-﻿using System;
-
-// Console.WriteLine(ReverseBot.WinRT.WinRT.FindImplementation(typeof(AppServiceConnection)));
-// Console.WriteLine(ReverseBot.WinRT.WinRT.FindImplementation<Windows.UI.Xaml.Hosting.DesktopWindowXamlSource>());
-// Console.WriteLine(ReverseBot.WinRT.WinRT.FindImplementation<StoreContext>());
-// Console.WriteLine(ReverseBot.WinRT.WinRT.FindImplementation<Windows.UI.Xaml.Controls.WebView>());
-// Console.WriteLine(ReverseBot.WinRT.WinRT.FindImplementation<CoreWindow>());
-// Console.WriteLine(ReverseBot.WinRT.WinRT.FindImplementation(typeof(CoreApplication)));
+﻿using Spectre.Console;
+using System;
+using System.ComponentModel;
 
 while (true)
 {
     Console.Clear();
-    Console.Write("GUID: ");
-    string input = Console.ReadLine();
-    Guid guid = new Guid(input.Replace("GUID_", "").Replace("_", "-"));
-    Console.WriteLine(guid.ToString());
+    var mode = AnsiConsole.Prompt(
+        new SelectionPrompt<string>()
+        {            
+            HighlightStyle = Style.WithForeground(Color.LightGreen)
+        }
+        .Title("Select a module")
+        .AddChoices(new[] {
+            "GUID",
+            "HRES",
+            "EXIT"
+        })
+    );
 
-    var impl = ReverseBot.WinRT.WinRT.FindIIDImplementation(guid);
-    Console.WriteLine($"Name: {impl.name}");
-    Console.WriteLine($"DLL: {impl.dllPath}");
+    try
+    {
+        switch (mode)
+        {
+            case "GUID":
+                {
+                    string input = AnsiConsole.Ask<string>("Your [green]Guid[/]:");
+                    Guid guid = new Guid(input.Replace("GUID_", "").Replace("_", "-"));
+                    Console.WriteLine(guid.ToString());
+                    Console.WriteLine(guid.ToString("X")); // NDBPX
 
-    Console.ReadKey();
+                    try
+                    {
+                        var impl = ReverseBot.WinRT.WinRT.FindIIDImplementation(guid);
+                        Console.WriteLine($"Name: {impl.name}; IID_{impl.name}");
+                        Console.WriteLine($"DLL: {impl.dllPath}");
+                    }
+                    catch { }
+
+                    try
+                    {
+                        var impl = ReverseBot.WinRT.WinRT.FindCLSIDImplementation(guid);
+                        Console.WriteLine($"Name: {impl.name}; CLSID_{impl.name}");
+                        Console.WriteLine($"DLL: {impl.dllPath}");
+                    }
+                    catch { }
+                    break;
+                }
+            case "HRES":
+                {
+                    string input = AnsiConsole.Ask<string>("Your [green]Hres[/]:");
+                    if (!int.TryParse(input, out int hRes))
+                        throw new ArgumentException("Not a valid integer");
+                    Win32Exception exceptionData = new(hRes);
+                    AnsiConsole.WriteLine(exceptionData.Message);
+                    break;
+                }
+            case "EXIT":
+                return;
+            default:
+                throw new ArgumentException("Wrong mode!");
+        }
+    }
+    catch (Exception ex)
+    {
+        AnsiConsole.WriteException(ex);
+    }
+    AnsiConsole.WriteLine();
+    AnsiConsole.WriteLine("Press ENTER to proceed");
+    Console.ReadLine();
 }
-
-Console.ReadLine();

@@ -17,10 +17,10 @@ namespace ReverseBot.WinRT
                     return (string)key.GetValue("DllPath");
 
             Guid iid = type.GetInterface($"I{type.Name}").GUID;
-            return FindIIDImplementation(iid).name;
+            return FindIIDImplementation(iid).dllPath;
         }
 
-        public static (string name, string dllPath) FindIIDImplementation(Guid iid)
+        public static Implementation FindIIDImplementation(Guid iid)
         {
             using (RegistryKey root = Registry.ClassesRoot)
             {
@@ -35,12 +35,37 @@ namespace ReverseBot.WinRT
                 if (clsid == null)
                     throw new FileNotFoundException();
 
-                string dllPath;
-                using (RegistryKey key = root.OpenSubKey($@"CLSID\{clsid}\InProcServer32"))
-                    dllPath = (string)key.GetValue(null);
+                string dllPath = null;
+                try
+                {
+                    dllPath = FindCLSIDImplementation(new Guid(clsid)).dllPath;
+                }
+                catch { }
 
-                return (name, dllPath);
+                return new(name, dllPath);
             }
         }
+
+        public static Implementation FindCLSIDImplementation(Guid clsid)
+        {
+            using (RegistryKey root = Registry.ClassesRoot)
+            {
+                string name = "";
+                using (RegistryKey key = root.OpenSubKey($@"CLSID\{{{clsid}}}"))
+                    name = (string)key.GetValue(null);
+
+                string dllPath = null;
+                try
+                {
+                    using (RegistryKey key = root.OpenSubKey($@"CLSID\{{{clsid}}}\InProcServer32"))
+                        dllPath = (string)key.GetValue(null);
+                }
+                catch { }
+
+                return new(name, dllPath);
+            }
+        }
+
+        public record Implementation(string name, string dllPath);
     }
 }
