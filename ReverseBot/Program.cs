@@ -1,19 +1,22 @@
 ﻿using Spectre.Console;
 using System;
+using System.Linq;
 using System.ComponentModel;
+using System.Diagnostics;
 
 while (true)
 {
     Console.Clear();
     var mode = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
-        {            
+        {
             HighlightStyle = Style.WithForeground(Color.LightGreen)
         }
         .Title("Select a module")
         .AddChoices(new[] {
             "GUID",
             "HRES",
+            "DLL_SEARCH",
             "EXIT"
         })
     );
@@ -24,7 +27,7 @@ while (true)
         {
             case "GUID":
                 {
-                    string input = AnsiConsole.Ask<string>("Your [green]Guid[/]:");
+                    string input = AnsiConsole.Ask<string>("Your [lightgreen]Guid[/]:");
                     Guid guid = new Guid(input.Replace("GUID_", "").Replace("_", "-"));
                     Console.WriteLine(guid.ToString());
                     Console.WriteLine(guid.ToString("X")); // NDBPX
@@ -48,11 +51,39 @@ while (true)
                 }
             case "HRES":
                 {
-                    string input = AnsiConsole.Ask<string>("Your [green]Hres[/]:");
+                    string input = AnsiConsole.Ask<string>("Your [lightgreen]Hres[/]:");
                     if (!int.TryParse(input, out int hRes))
                         throw new ArgumentException("Not a valid integer");
+
                     Win32Exception exceptionData = new(hRes);
                     AnsiConsole.WriteLine(exceptionData.Message);
+                    break;
+                }
+            case "DLL_SEARCH":
+                {
+                    string dllName = AnsiConsole.Ask<string>("Your [lightgreen]DllName[/]:");
+
+                    Process[] processes = Process.GetProcesses();
+                    foreach (Process process in processes)
+                        try
+                        {
+                            foreach (ProcessModule module in process.Modules)
+                                if (module.FileName.ToLower().Contains(dllName.ToLower()))
+                                {
+                                    AnsiConsole.WriteLine("---");
+                                    AnsiConsole.WriteLine(
+                                        $"NAME: {process.ProcessName}\r\n" +
+                                        $"PID: {process.Id}\r\n" +
+                                        $"PATH: {process.MainModule.FileName}"
+                                    );
+                                    AnsiConsole.WriteLine("---");
+                                    break;
+                                }
+                        }
+                        catch
+                        {
+                            AnsiConsole.WriteLine($"Can't enumerate modules of \"{process.ProcessName}\". You might want to run as admin...");
+                        }
                     break;
                 }
             case "EXIT":
@@ -66,6 +97,6 @@ while (true)
         AnsiConsole.WriteException(ex);
     }
     AnsiConsole.WriteLine();
-    AnsiConsole.WriteLine("Press ENTER to proceed");
+    AnsiConsole.MarkupLine("Press [red]ENTER[/] to proceed");
     Console.ReadLine();
 }
