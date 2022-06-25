@@ -1,8 +1,9 @@
-﻿using Spectre.Console;
+﻿using ReverseBot.AppxActivation;
+using Spectre.Console;
 using System;
-using System.Linq;
 using System.ComponentModel;
 using System.Diagnostics;
+using Style = Spectre.Console.Style;
 
 while (true)
 {
@@ -17,6 +18,7 @@ while (true)
             "GUID",
             "HRES",
             "DLL_SEARCH",
+            "Activate_Appx",
             "EXIT"
         })
     );
@@ -84,6 +86,22 @@ while (true)
                         {
                             AnsiConsole.WriteLine($"Can't enumerate modules of \"{process.ProcessName}\". You might want to run as admin...");
                         }
+                    break;
+                }
+            case "Activate_Appx":
+                {
+                    string appUserModelId = AnsiConsole.Ask<string>("[lightgreen]appUserModelId[/]:");
+                    string packageFullName = AnsiConsole.Ask<string>("[lightgreen]packageFullName[/]:");
+                    string debuggerPath = AnsiConsole.Ask<string>("[lightgreen]debuggerPath[/]:");
+
+                    ApplicationActivationManager.DisableDebugging(packageFullName);
+                    ApplicationActivationManager.EnableDebugging(packageFullName, debuggerPath);
+                    ApplicationActivationManager.ActivateApplication(appUserModelId);
+
+                    AnsiConsole.MarkupLine("Press [red]ENTER[/] to resume");
+                    Console.ReadLine();
+
+                    ApplicationActivationManager.DisableDebugging(packageFullName);
                     break;
                 }
             case "EXIT":
