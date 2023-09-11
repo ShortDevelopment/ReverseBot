@@ -1,4 +1,6 @@
-﻿using ReverseBot.AppxActivation;
+﻿using ReverseBot;
+using ReverseBot.AppxActivation;
+using ReverseBot.WinRT;
 using Spectre.Console;
 using System;
 using System.ComponentModel;
@@ -19,6 +21,7 @@ while (true)
             "HRES",
             "DLL_SEARCH",
             "Activate_Appx",
+            "WinRT_Impl",
             "EXIT"
         })
     );
@@ -30,23 +33,23 @@ while (true)
             case "GUID":
                 {
                     string input = AnsiConsole.Ask<string>("Your [lightgreen]Guid[/]:");
-                    Guid guid = new Guid(input.Replace("GUID_", "").Replace("_", "-"));
+                    Guid guid = new(input.Replace("GUID_", "").Replace("_", "-"));
                     Console.WriteLine(guid.ToString());
                     Console.WriteLine(guid.ToString("X")); // NDBPX
 
                     try
                     {
                         var impl = ReverseBot.WinRT.WinRT.FindIIDImplementation(guid);
-                        Console.WriteLine($"Name: {impl.name}; IID_{impl.name}");
-                        Console.WriteLine($"DLL: {impl.dllPath}");
+                        Console.WriteLine($"Name: {impl.Name}; IID_{impl.Name}");
+                        Console.WriteLine($"DLL: {impl.DllPath}");
                     }
                     catch { }
 
                     try
                     {
                         var impl = ReverseBot.WinRT.WinRT.FindCLSIDImplementation(guid);
-                        Console.WriteLine($"Name: {impl.name}; CLSID_{impl.name}");
-                        Console.WriteLine($"DLL: {impl.dllPath}");
+                        Console.WriteLine($"Name: {impl.Name}; CLSID_{impl.Name}");
+                        Console.WriteLine($"DLL: {impl.DllPath}");
                     }
                     catch { }
                     break;
@@ -102,6 +105,12 @@ while (true)
                     Console.ReadLine();
 
                     ApplicationActivationManager.DisableDebugging(packageFullName);
+                    break;
+                }
+            case "WinRT_Impl":
+                {
+                    string typeName = AnsiConsole.Ask<string>("[lightgreen]typeName[/]:");
+                    Console.WriteLine(WinRT.QueryClassRegistration(typeName));
                     break;
                 }
             case "EXIT":

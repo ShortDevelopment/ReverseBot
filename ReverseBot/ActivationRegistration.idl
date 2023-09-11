@@ -1,0 +1,50 @@
+import "inspectable.idl";
+import "hstring.idl";
+
+namespace ActivationRegistration
+{
+
+	[version(1.0)]
+	enum RegistrationScope
+	{
+		PerMachine,
+		PerUser,
+		InboxApp
+	};
+
+	[version(1.0)]
+	enum ActivationType
+	{
+		InProcess,
+		OutOfProcess,
+		RemoteProcess
+	};
+
+	[version(1.0)]
+	enum ThreadingType
+	{
+		BOTH,
+		STA,
+		MTA
+	};
+
+	[version(1.0)]
+	[uuid(C8AA04F6-66C6-46A3-8FE6-F56BE7DDC091)]
+	interface IDllServerActivatableClassRegistration : IInspectable
+	{
+		[propget] HRESULT DllPath([retval, out] HSTRING* dllPath);
+		[propget] HRESULT ThreadingType([retval, out] ThreadingType* threadingType);
+	};
+
+	[version(1.0)]
+	[uuid(9BBCAE23-3DD6-49C3-B63C-1C587E7A6A67)]
+	interface IActivatableClassRegistration : IInspectable
+	{
+		[propget] HRESULT ActivatableClassId([retval, out] HSTRING* activatableClassID);
+		[propget] HRESULT ActivationType([retval, out] ActivationType* activationType);
+		[propget] HRESULT RegistrationScope([retval, out] RegistrationScope* registrationScope);
+		// [propget] HRESULT RegisteredTrustLevel([retval, out] TrustLevel* registeredTrustLevel);
+		// [propget] HRESULT Attributes([Windows.Foundation.Metadata.HasVariantAttribute, retval, out] */__RPC__deref_out_opt __FIMapView_2_HSTRING_IInspectable** attributes);
+	};
+
+}
