@@ -3,21 +3,25 @@ using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.WinRT;
+using WinRT;
 
-namespace ReverseBot.WinRT;
-
-public class WinRT
+namespace ReverseBot;
+public static class WinRTUtils
 {
     [DllImport("combase.dll")]
-    static extern int RoGetActivatableClassRegistration([MarshalAs(UnmanagedType.HString)] string activatableClassId, out IActivatableClassRegistration activatableClassRegistration);
+    static extern HRESULT RoGetActivatableClassRegistration(HSTRING activatableClassId, out nint activatableClassRegistration);
 
     public static Implementation QueryClassRegistration(string activatableClassId)
     {
-        Marshal.ThrowExceptionForHR(
-            RoGetActivatableClassRegistration(activatableClassId, out var registration)
-        );
-        var serverReg = (IDllServerActivatableClassRegistration)registration;
-        return new(activatableClassId, serverReg.DllPath);
+        var marshalledString = MarshalString.CreateMarshaler(activatableClassId);
+        RoGetActivatableClassRegistration((HSTRING)marshalledString.GetAbi(), out var pRegistration).ThrowOnFailure();
+
+        var registration = MarshalInterface<IActivatableClassRegistration>.FromAbi(pRegistration);
+
+        var dllReg = registration.As<IDllServerActivatableClassRegistration>();
+        return new(registration.ActivatableClassId, dllReg.DllPath);
     }
 
     public static Implementation FindIIDImplementation(Guid iid)
@@ -54,8 +58,8 @@ public class WinRT
         string dllPath = null;
         try
         {
-            using (RegistryKey key = root.OpenSubKey($@"CLSID\{{{clsid}}}\InProcServer32"))
-                dllPath = (string)key.GetValue(null);
+            using RegistryKey key = root.OpenSubKey($@"CLSID\{{{clsid}}}\InProcServer32");
+            dllPath = (string)key.GetValue(null);
         }
         catch { }
 

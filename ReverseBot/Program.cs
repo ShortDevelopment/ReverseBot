@@ -1,6 +1,5 @@
 ﻿using ReverseBot;
 using ReverseBot.AppxActivation;
-using ReverseBot.WinRT;
 using Spectre.Console;
 using System;
 using System.ComponentModel;
@@ -39,7 +38,7 @@ while (true)
 
                     try
                     {
-                        var impl = ReverseBot.WinRT.WinRT.FindIIDImplementation(guid);
+                        var impl = WinRTUtils.FindIIDImplementation(guid);
                         Console.WriteLine($"Name: {impl.Name}; IID_{impl.Name}");
                         Console.WriteLine($"DLL: {impl.DllPath}");
                     }
@@ -47,7 +46,7 @@ while (true)
 
                     try
                     {
-                        var impl = ReverseBot.WinRT.WinRT.FindCLSIDImplementation(guid);
+                        var impl = WinRTUtils.FindCLSIDImplementation(guid);
                         Console.WriteLine($"Name: {impl.Name}; CLSID_{impl.Name}");
                         Console.WriteLine($"DLL: {impl.DllPath}");
                     }
@@ -110,7 +109,7 @@ while (true)
             case "WinRT_Impl":
                 {
                     string typeName = AnsiConsole.Ask<string>("[lightgreen]typeName[/]:");
-                    Console.WriteLine(WinRT.QueryClassRegistration(typeName));
+                    Console.WriteLine(WinRTUtils.QueryClassRegistration(typeName));
                     break;
                 }
             case "EXIT":
